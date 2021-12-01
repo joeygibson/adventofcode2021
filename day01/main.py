@@ -2,21 +2,19 @@
 import sys
 
 
-def part1(path: str) -> int:
-    with open(path) as f:
-        lines = [int(x) for x in f.readlines()]
-
-    res = [ind + 1 for ind, x in enumerate(lines) if ind + 1 < len(lines) and lines[ind + 1] > x]
+def part1(lst: list) -> int:
+    res = [ind + 1 for ind, x in enumerate(lst) if ind + 1 < len(lst) and lst[ind + 1] > x]
     return len(res)
 
 
-def part2(path: str) -> int:
-    with open(path) as f:
-        lines = [int(x) for x in f.readlines()]
+def part2(lst: list) -> int:
+    groups = [x + lst[ind + 1] + lst[ind + 2] for ind, x in enumerate(lst) if ind + 2 < len(lst)]
+    return part1(groups)
 
-    groups = [x + lines[ind + 1] + lines[ind + 2] for ind, x in enumerate(lines) if ind + 2 < len(lines)]
-    res = [ind + 1 for ind, x in enumerate(groups) if ind + 1 < len(groups) and groups[ind + 1] > x]
-    return len(res)
+
+def get_data(path):
+    with open(path) as f:
+        return [int(x) for x in f.readlines()]
 
 
 if __name__ == '__main__':
@@ -24,8 +22,10 @@ if __name__ == '__main__':
         print('Usage: main.py <filename>')
         sys.exit(1)
 
-    r1 = part1(sys.argv[1])
-    r2 = part2(sys.argv[1])
+    lines = get_data(sys.argv[1])
+
+    r1 = part1(lines)
+    r2 = part2(lines)
 
     print(f'part 1: {r1}')
     print(f'part 2: {r2}')
