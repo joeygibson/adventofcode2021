@@ -2,13 +2,19 @@
 import sys
 
 
+def partition(lst: list, n: int) -> list:
+    for i in range(0, len(lst)):
+        yield lst[i:i + n]
+
+
 def part1(lst: list) -> int:
-    res = [ind + 1 for ind, x in enumerate(lst) if ind + 1 < len(lst) and lst[ind + 1] > x]
+    filtered_list = filter(lambda x: len(x) == 2, partition(lst, 2))
+    res = [x for x, y in filtered_list if y > x]
     return len(res)
 
 
 def part2(lst: list) -> int:
-    groups = [x + lst[ind + 1] + lst[ind + 2] for ind, x in enumerate(lst) if ind + 2 < len(lst)]
+    groups = list(map(lambda x: sum(x), partition(lst, 3)))
     return part1(groups)
 
 
