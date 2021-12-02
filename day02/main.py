@@ -12,6 +12,25 @@ def part1(lst: list) -> int:
     return horizontal * vertical
 
 
+def part2(lst: list) -> int:
+    pos = 0
+    depth = 0
+    aim = 0
+
+    for op, val in lst:
+        val = int(val)
+
+        if op == 'forward':
+            pos += val
+            depth += aim * val
+        elif op == 'up':
+            aim -= val
+        else:
+            aim += val
+
+    return depth * pos
+
+
 def get_data(path):
     with open(path) as f:
         return [x.strip().split() for x in f.readlines() if x.strip()]
@@ -25,7 +44,7 @@ if __name__ == '__main__':
     lines = get_data(sys.argv[1])
 
     r1 = part1(lines)
-    # r2 = part2(lines)
+    r2 = part2(lines)
 
     print(f'part 1: {r1}')
-    # print(f'part 2: {r2}')
+    print(f'part 2: {r2}')
