@@ -1,11 +1,17 @@
 #! /usr/bin/env python3
 import sys
+from functools import reduce
+from typing import Callable
+
+
+def partition(lst: list[str], pred: Callable[[str], bool]) -> (list[str], list[str]):
+    return reduce(lambda x, y: x[pred(y)].append(y) or x, lst, ([], []))
 
 
 def part1(lst: list) -> int:
-    horiz_ops = filter(lambda x: x[0] == 'forward', lst)
-    vert_ops = filter(lambda x: x[0] != 'forward', lst)
-
+    horiz_ops, vert_ops = partition(lst, lambda x: x[0] != 'forward')
+    print(f'h: {horiz_ops}')
+    print(f'v: {vert_ops}')
     horizontal = sum([int(x[1]) for x in horiz_ops])
     vertical = sum([int(x[1]) if x[0] == 'down' else -int(x[1]) for x in vert_ops])
 
