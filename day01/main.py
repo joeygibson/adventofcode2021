@@ -20,7 +20,7 @@ def part2(lst: list) -> int:
 
 def get_data(path):
     with open(path) as f:
-        return [int(x) for x in f.readlines()]
+        return [int(x.strip()) for x in f.readlines() if x.strip()]
 
 
 if __name__ == '__main__':
