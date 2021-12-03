@@ -13,7 +13,7 @@ def part1(lst: list) -> int:
     epsilon = ''
 
     for i in range(0, len(lst[0])):
-        col = [x[i] for x in lines]
+        col = [x[i] for x in lst]
         ones, zeros = partition(col, lambda x: x == '0')
 
         if len(ones) > len(zeros):
@@ -24,6 +24,30 @@ def part1(lst: list) -> int:
             epsilon += '1'
 
     return int(gamma, 2) * int(epsilon, 2)
+
+
+def part2(lst: list) -> int:
+    def part2_work(lst: list, index: int, ox: bool) -> int:
+        for i in range(0, len(lst[0])):
+            col = [x[index] for x in lst]
+            ones, zeros = partition(col, lambda x: x == '0')
+
+            if ox:
+                val_to_keep = '1' if len(ones) > len(zeros) or len(ones) == len(zeros) else '0'
+            else:
+                val_to_keep = '0' if len(ones) > len(zeros) or len(ones) == len(zeros) else '1'
+
+            filtered_list = list(filter(lambda x: x[index] == val_to_keep, lst))
+
+            if len(filtered_list) == 1:
+                return int(''.join(filtered_list[0]), 2)
+            else:
+                return part2_work(filtered_list, index + 1, ox)
+
+    ox_rating = part2_work(lst, 0, True)
+    co2_rating = part2_work(lst, 0, False)
+
+    return ox_rating * co2_rating
 
 
 def get_data(path):
@@ -39,7 +63,17 @@ if __name__ == '__main__':
     lines = get_data(sys.argv[1])
 
     r1 = part1(lines)
-    # r2 = part2(lines)
+    r2 = part2(lines)
 
     print(f'part 1: {r1}')
-    # print(f'part 2: {r2}')
+    print(f'part 2: {r2}')
+
+# if len(ones) > len(zeros):
+#     val_to_keep = '1'
+# elif len(ones) < len(zeros):
+#     val_to_keep = '0'
+# else:
+#     if ox:
+#         val_to_keep = '1'
+#     else:
+#         val_to_keep = '0'
