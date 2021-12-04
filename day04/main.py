@@ -11,11 +11,9 @@ def mark(board: list, ball: str):
 
 def compute(board: list) -> int:
     res = 0
-    print(f'board: {board}')
     for row in board:
         for cell in row:
             if not list(cell.values())[0]:
-                print(f'cell: {int(list(cell)[0])}')
                 res += int(list(cell)[0])
 
     return res
@@ -29,6 +27,24 @@ def part1(boards: list, balls: list) -> int:
             if is_winner(board):
                 res = compute(board)
                 return res * int(ball)
+
+
+def part2(boards: list, balls: list) -> int:
+    wins = {}
+
+    for ball in balls:
+        for board in boards:
+            if is_winner(board):
+                continue
+
+            mark(board, ball)
+
+            if is_winner(board):
+                wins[ball] = board
+    for ball in reversed(balls):
+        if ball in wins:
+            res = compute(wins[ball])
+            return res * int(ball)
 
 
 def get_data(path):
@@ -68,13 +84,14 @@ if __name__ == '__main__':
         sys.exit(1)
 
     lines = get_data(sys.argv[1])
-    # lines = get_data('input0.txt')
 
     balls = lines[0].split(',')
     boards = create_boards(lines[1:])
 
     r1 = part1(boards, balls)
-    # r2 = part2(lines)
+
+    boards = create_boards(lines[1:])
+    r2 = part2(boards, balls)
 
     print(f'part 1: {r1}')
-    # print(f'part 2: {r2}')
+    print(f'part 2: {r2}')
