@@ -1,5 +1,4 @@
 #! /usr/bin/env python3
-import statistics
 import sys
 from functools import reduce
 
@@ -10,30 +9,30 @@ def get_data(path) -> list:
 
 
 def part1(lst: list[int]) -> int:
-    print(f'stddev {statistics.stdev(lst)}')
-    print(f'mean {statistics.mean(lst)}')
-    print(f'mode {statistics.mode(lst)}')
-    print(f'variance {statistics.variance(lst)}')
-    print(f'len {len(lst)}')
-
-    mode = statistics.mode(lst)
-
-    # fuel = reduce(lambda acc, x: acc + abs(x - mode), lst, 0)
-
     least_fuel = sys.maxsize
-    best_pos = sys.maxsize
 
     for pos in lst:
         fuel = reduce(lambda acc, x: acc + abs(x - pos), lst, 0)
 
         if fuel < least_fuel:
             least_fuel = fuel
-            best_pos = pos
-
-    print(f'least_fuel {least_fuel}')
-    print(f'best_pos {best_pos}')
 
     return least_fuel
+
+
+def part2(lst: list[int]) -> int:
+    least_fuel = sys.maxsize
+
+    for pos in range(0, max(lst)):
+        fuel = reduce(lambda acc, x: acc + step_mul(abs(x - pos)), lst, 0)
+        if fuel < least_fuel:
+            least_fuel = fuel
+
+    return least_fuel
+
+
+def step_mul(steps: int) -> int:
+    return int((steps ** 2 + steps) / 2)
 
 
 if __name__ == '__main__':
@@ -43,7 +42,5 @@ if __name__ == '__main__':
 
     file_name = sys.argv[1]
 
-    r1 = part1(get_data(file_name))
-
-    print(f'part 1: {r1}')
-    # print(f'part 2: {r2}')
+    print(f'part 1: {part1(get_data(file_name))}')
+    print(f'part 2: {part2(get_data(file_name))}')
