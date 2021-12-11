@@ -11,8 +11,7 @@ R_CURLY = '}'
 L_ANGLE = '<'
 R_ANGLE = '>'
 
-OPENERS = [L_PAREN, L_BRACKET, L_CURLY, L_ANGLE]
-CLOSERS = [R_PAREN, R_BRACKET, R_CURLY, R_ANGLE]
+PAIRS = {R_PAREN: L_PAREN, R_BRACKET: L_BRACKET, R_CURLY: L_CURLY, R_ANGLE: L_ANGLE}
 PART1_SCORE_VALUES = {R_PAREN: 3, R_BRACKET: 57, R_CURLY: 1197, R_ANGLE: 25137}
 PART2_SCORE_VALUES = {L_PAREN: 1, L_BRACKET: 2, L_CURLY: 3, L_ANGLE: 4}
 
@@ -24,14 +23,14 @@ def part1(rows: list[list[str]]) -> (int, list[str]):
     for row in rows:
         stack = []
         for ch in row:
-            if ch in CLOSERS:
+            if ch in PAIRS.keys():
                 if len(stack) == 0:
                     offenders[ch] = 1
                     offending_rows.append(row)
                     break
                 else:
                     top = stack[-1]
-                    opener = OPENERS[CLOSERS.index(ch)]
+                    opener = PAIRS[ch]
                     if top != opener:
                         offenders[ch] = offenders.get(ch, 0) + 1
                         offending_rows.append(row)
@@ -43,7 +42,7 @@ def part1(rows: list[list[str]]) -> (int, list[str]):
 
     total = functools.reduce(lambda acc, ch: acc + (offenders.get(ch, 0) *
                                                     PART1_SCORE_VALUES[ch]),
-                             CLOSERS, 0)
+                             PAIRS.keys(), 0)
 
     return total, offending_rows
 
@@ -54,7 +53,7 @@ def part2(rows: list[list[str]]) -> int:
     for row in rows:
         stack = []
         for ch in row:
-            if ch in CLOSERS:
+            if ch in PAIRS.keys():
                 stack.pop()
             else:
                 stack.append(ch)
