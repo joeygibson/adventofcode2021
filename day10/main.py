@@ -2,18 +2,11 @@
 import functools
 import sys
 
-L_PAREN = '('
-R_PAREN = ')'
-L_BRACKET = '['
-R_BRACKET = ']'
-L_CURLY = '{'
-R_CURLY = '}'
-L_ANGLE = '<'
-R_ANGLE = '>'
-
-PAIRS = {R_PAREN: L_PAREN, R_BRACKET: L_BRACKET, R_CURLY: L_CURLY, R_ANGLE: L_ANGLE}
-PART1_SCORE_VALUES = {R_PAREN: 3, R_BRACKET: 57, R_CURLY: 1197, R_ANGLE: 25137}
-PART2_SCORE_VALUES = {L_PAREN: 1, L_BRACKET: 2, L_CURLY: 3, L_ANGLE: 4}
+OPENERS = '([{<'
+CLOSERS = ')]}>'
+PAIRS = {c: o for c, o in zip(CLOSERS, OPENERS)}
+PART1_SCORE_VALUES = {ch: s for ch, s in zip(CLOSERS, [3, 57, 1197, 25137])}
+PART2_SCORE_VALUES = {ch: s for ch, s in zip(OPENERS, range(1, 5))}
 
 
 def part1(rows: list[list[str]]) -> (int, list[str]):
