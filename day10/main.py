@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+import functools
 import sys
 
 L_PAREN = '('
@@ -12,11 +13,14 @@ R_ANGLE = '>'
 
 OPENERS = [L_PAREN, L_BRACKET, L_CURLY, L_ANGLE]
 CLOSERS = [R_PAREN, R_BRACKET, R_CURLY, R_ANGLE]
+PART1_SCORE_VALUES = {R_PAREN: 3, R_BRACKET: 57, R_CURLY: 1197, R_ANGLE: 25137}
+PART2_SCORE_VALUES = {L_PAREN: 1, L_BRACKET: 2, L_CURLY: 3, L_ANGLE: 4}
 
 
 def part1(rows: list[list[str]]) -> (int, list[str]):
     offenders = {}
     offending_rows = []
+
     for row in rows:
         stack = []
         for ch in row:
@@ -27,10 +31,8 @@ def part1(rows: list[list[str]]) -> (int, list[str]):
                     break
                 else:
                     top = stack[-1]
-                    if (ch == R_PAREN and top != L_PAREN) or \
-                            (ch == R_BRACKET and top != L_BRACKET) or \
-                            (ch == R_CURLY and top != L_CURLY) or \
-                            (ch == R_ANGLE and top != L_ANGLE):
+                    opener = OPENERS[CLOSERS.index(ch)]
+                    if top != opener:
                         offenders[ch] = offenders.get(ch, 0) + 1
                         offending_rows.append(row)
                         break
@@ -39,12 +41,11 @@ def part1(rows: list[list[str]]) -> (int, list[str]):
             else:
                 stack.append(ch)
 
-    parens = offenders.get(R_PAREN, 0) * 3
-    brackets = offenders.get(R_BRACKET, 0) * 57
-    curlies = offenders.get(R_CURLY, 0) * 1197
-    angles = offenders.get(R_ANGLE, 0) * 25137
+    total = functools.reduce(lambda acc, ch: acc + (offenders.get(ch, 0) *
+                                                    PART1_SCORE_VALUES[ch]),
+                             CLOSERS, 0)
 
-    return sum([parens, brackets, curlies, angles]), offending_rows
+    return total, offending_rows
 
 
 def part2(rows: list[list[str]]) -> int:
@@ -58,21 +59,7 @@ def part2(rows: list[list[str]]) -> int:
             else:
                 stack.append(ch)
 
-        score = 0
-
-        for ch in reversed(stack):
-            if ch == L_PAREN:
-                ch_score = 1
-            elif ch == L_BRACKET:
-                ch_score = 2
-            elif ch == L_CURLY:
-                ch_score = 3
-            else:
-                ch_score = 4
-
-            score = (score * 5) + ch_score
-
-        scores.append(score)
+        scores.append(functools.reduce(lambda acc, ch: (acc * 5) + PART2_SCORE_VALUES[ch], reversed(stack), 0))
 
     sorted_scores = sorted(scores)
 
