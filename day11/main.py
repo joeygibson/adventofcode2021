@@ -63,7 +63,7 @@ def part1(octopuses: dict[Tuple[int, int], Octopus], iterations: int) -> int:
                 neighbors.append(octopus.neighbors())
 
         neighbors = list(itertools.chain(*neighbors))
-        valid_neighbors = [data[n] for n in neighbors if n in data and not data[n].flashed]
+        valid_neighbors = [octopuses[n] for n in neighbors if n in octopuses and not octopuses[n].flashed]
 
         if len(valid_neighbors) > 0:
             return flashed + step(valid_neighbors)
@@ -78,9 +78,42 @@ def part1(octopuses: dict[Tuple[int, int], Octopus], iterations: int) -> int:
         for octopus in octopuses.values():
             octopus.reset()
 
-        print(f'{i} -> {flashes}')
-
     return total_flashes
+
+
+def part2(octopuses: dict[Tuple[int, int], Octopus]) -> int:
+    def step(candidates: list[Octopus]) -> int:
+        neighbors = []
+        flashed = 0
+        for octopus in candidates:
+            if octopus.can_increase() and octopus.increase_power():
+                flashed += 1
+                neighbors.append(octopus.neighbors())
+
+        neighbors = list(itertools.chain(*neighbors))
+        valid_neighbors = [octopuses[n] for n in neighbors if n in octopuses and not octopuses[n].flashed]
+
+        if len(valid_neighbors) > 0:
+            return flashed + step(valid_neighbors)
+        else:
+            return flashed
+
+    all_flashed = -1
+
+    for i in range(1000):
+        flashes = step(list(octopuses.values()))
+        # print(f'flashes: {flashes}, iter {i}')
+        if flashes == 100:
+            all_flashed = i + 1
+
+            break
+
+        for octopus in octopuses.values():
+            octopus.reset()
+
+        # print(f'{i} -> {flashes}')
+
+    return all_flashed
 
 
 if __name__ == '__main__':
@@ -90,6 +123,6 @@ if __name__ == '__main__':
 
     file_name = sys.argv[1]
     iterations = int(sys.argv[2])
-    data = get_data(file_name)
 
-    print(f'part1 {part1(data, iterations)}')
+    print(f'part1 {part1(get_data(file_name), iterations)}')
+    print(f'part2 {part2(get_data(file_name))}')
