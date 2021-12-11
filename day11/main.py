@@ -53,27 +53,28 @@ def get_data(path) -> dict[Tuple[int, int], Octopus]:
     return data
 
 
+def step(octopuses: dict[Tuple[int, int], Octopus], candidates: list[Octopus]) -> int:
+    neighbors = []
+    flashed = 0
+    for octopus in candidates:
+        if octopus.can_increase() and octopus.increase_power():
+            flashed += 1
+            neighbors.append(octopus.neighbors())
+
+    neighbors = list(itertools.chain(*neighbors))
+    valid_neighbors = [octopuses[n] for n in neighbors if n in octopuses and not octopuses[n].flashed]
+
+    if len(valid_neighbors) > 0:
+        return flashed + step(octopuses, valid_neighbors)
+    else:
+        return flashed
+
+
 def part1(octopuses: dict[Tuple[int, int], Octopus], iterations: int) -> int:
-    def step(candidates: list[Octopus]) -> int:
-        neighbors = []
-        flashed = 0
-        for octopus in candidates:
-            if octopus.can_increase() and octopus.increase_power():
-                flashed += 1
-                neighbors.append(octopus.neighbors())
-
-        neighbors = list(itertools.chain(*neighbors))
-        valid_neighbors = [octopuses[n] for n in neighbors if n in octopuses and not octopuses[n].flashed]
-
-        if len(valid_neighbors) > 0:
-            return flashed + step(valid_neighbors)
-        else:
-            return flashed
-
     total_flashes = 0
 
     for i in range(iterations):
-        flashes = step(list(octopuses.values()))
+        flashes = step(octopuses, list(octopuses.values()))
         total_flashes += flashes
         for octopus in octopuses.values():
             octopus.reset()
@@ -82,27 +83,10 @@ def part1(octopuses: dict[Tuple[int, int], Octopus], iterations: int) -> int:
 
 
 def part2(octopuses: dict[Tuple[int, int], Octopus]) -> int:
-    def step(candidates: list[Octopus]) -> int:
-        neighbors = []
-        flashed = 0
-        for octopus in candidates:
-            if octopus.can_increase() and octopus.increase_power():
-                flashed += 1
-                neighbors.append(octopus.neighbors())
-
-        neighbors = list(itertools.chain(*neighbors))
-        valid_neighbors = [octopuses[n] for n in neighbors if n in octopuses and not octopuses[n].flashed]
-
-        if len(valid_neighbors) > 0:
-            return flashed + step(valid_neighbors)
-        else:
-            return flashed
-
     all_flashed = -1
 
     for i in range(1000):
-        flashes = step(list(octopuses.values()))
-        # print(f'flashes: {flashes}, iter {i}')
+        flashes = step(octopuses, list(octopuses.values()))
         if flashes == 100:
             all_flashed = i + 1
 
@@ -110,8 +94,6 @@ def part2(octopuses: dict[Tuple[int, int], Octopus]) -> int:
 
         for octopus in octopuses.values():
             octopus.reset()
-
-        # print(f'{i} -> {flashes}')
 
     return all_flashed
 
