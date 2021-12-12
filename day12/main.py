@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 import sys
+from collections import Counter
 
 
 class Cave:
@@ -46,13 +47,9 @@ def get_data(path) -> [list[list[str]]]:
     with open(path) as f:
         lines = [x.strip() for x in f.readlines() if x.strip()]
 
-    return [x.split('-') for x in lines]
-
-
-def part1(lst: list[list[str]]) -> int:
     caves = {}
 
-    for a, b in lst:
+    for a, b in [x.split('-') for x in lines]:
         if a not in caves:
             a_cave = Cave(a)
         else:
@@ -69,10 +66,18 @@ def part1(lst: list[list[str]]) -> int:
         caves[a] = a_cave
         caves[b] = b_cave
 
-    return len(walk(caves['start'], [caves['start']]))
+    return caves
 
 
-def walk(start_at: Cave, path: list[Cave]) -> list[list[Cave]]:
+def part1(caves: dict[str, Cave]) -> int:
+    return len(walk(caves['start'], [caves['start']], False))
+
+
+def part2(caves: dict[str, Cave]) -> int:
+    return len(walk(caves['start'], [caves['start']], True))
+
+
+def walk(start_at: Cave, path: list[Cave], allow_multiple: bool) -> list[list[Cave]]:
     if start_at.is_end():
         return [path]
 
@@ -82,13 +87,20 @@ def walk(start_at: Cave, path: list[Cave]) -> list[list[Cave]]:
         if cave.is_start():
             continue
 
-        if cave.is_small() and cave in path:
-            continue
+        if allow_multiple:
+            small_counts = Counter(list(filter(lambda x: x.is_small(), path)))
+            multiple_small_visits = any([c > 1 for c in small_counts.values()])
+
+            if cave.is_small() and cave in path and multiple_small_visits:
+                continue
+        else:
+            if cave.is_small() and cave in path:
+                continue
 
         tmp_path = list([x for x in path])
         tmp_path.append(cave)
 
-        paths += walk(cave, tmp_path)
+        paths += walk(cave, tmp_path, allow_multiple)
 
     return paths
 
@@ -101,3 +113,4 @@ if __name__ == '__main__':
     file_name = sys.argv[1]
 
     print(f'part1 {part1(get_data(file_name))}')
+    print(f'part2 {part2(get_data(file_name))}')
