@@ -9,7 +9,6 @@ class Cave:
         self.links = {}
 
     def __str__(self):
-        # return f'{self.name} -> {[o.name for o in self.links]} '
         return f'{self.name}'
 
     def __repr__(self):
@@ -21,17 +20,8 @@ class Cave:
     def __hash__(self):
         return self.name.__hash__()
 
-    def remove(self, other: 'Cave'):
-        del self.links[other]
-
     def add(self, other: 'Cave'):
         self.links[other] = other
-
-    def contains(self, other: 'Cave'):
-        return other in self.links
-
-    def dead_end(self, came_from: 'Cave') -> bool:
-        return len(self.links) == 0 or (len(self.links) == 1 and came_from in self.links)
 
     def is_start(self) -> bool:
         return self.name == 'START'
@@ -87,14 +77,14 @@ def walk(start_at: Cave, path: list[Cave], allow_multiple: bool) -> list[list[Ca
         if cave.is_start():
             continue
 
-        if allow_multiple:
-            small_counts = Counter(list(filter(lambda x: x.is_small(), path)))
-            multiple_small_visits = any([c > 1 for c in small_counts.values()])
+        if cave.is_small() and cave in path:
+            if allow_multiple:
+                small_counts = Counter(list(filter(lambda x: x.is_small(), path)))
+                multiple_small_visits = any([c > 1 for c in small_counts.values()])
 
-            if cave.is_small() and cave in path and multiple_small_visits:
-                continue
-        else:
-            if cave.is_small() and cave in path:
+                if multiple_small_visits:
+                    continue
+            else:
                 continue
 
         tmp_path = list([x for x in path])
