@@ -83,24 +83,24 @@ def part1(octopuses: dict[Tuple[int, int], Octopus], iterations: int) -> int:
 
 
 def part2(octopuses: dict[Tuple[int, int], Octopus]) -> int:
-    all_flashed = -1
+    i = 0
+    flashes = -1
 
-    for i in range(1000):
+    while flashes != 100:
+        i += 1
         flashes = step(octopuses, list(octopuses.values()))
         if flashes == 100:
-            all_flashed = i + 1
-
             break
 
         for octopus in octopuses.values():
             octopus.reset()
 
-    return all_flashed
+    return i
 
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print('Usage: main.py <filename>')
+        print('Usage: main.py <filename> <iterations>')
         sys.exit(1)
 
     file_name = sys.argv[1]
