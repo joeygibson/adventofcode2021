@@ -33,20 +33,25 @@ class Cave:
         return self.name.islower()
 
 
-def get_data(path) -> [list[list[str]]]:
+def get_data(path) -> Cave:
     with open(path) as f:
         lines = [x.strip() for x in f.readlines() if x.strip()]
 
     caves = {}
+    start = None
 
     for a, b in [x.split('-') for x in lines]:
         if a not in caves:
             a_cave = Cave(a)
+            if a == 'start':
+                start = a_cave
         else:
             a_cave = caves[a]
 
         if b not in caves:
             b_cave = Cave(b)
+            if b == 'start':
+                start = b_cave
         else:
             b_cave = caves[b]
 
@@ -56,15 +61,15 @@ def get_data(path) -> [list[list[str]]]:
         caves[a] = a_cave
         caves[b] = b_cave
 
-    return caves
+    return start
 
 
-def part1(caves: dict[str, Cave]) -> int:
-    return len(walk(caves['start'], [caves['start']], False))
+def part1(start: Cave) -> int:
+    return len(walk(start, [start], False))
 
 
-def part2(caves: dict[str, Cave]) -> int:
-    return len(walk(caves['start'], [caves['start']], True))
+def part2(start: Cave) -> int:
+    return len(walk(start, [start], True))
 
 
 def walk(start_at: Cave, path: list[Cave], allow_multiple: bool) -> list[list[Cave]]:
