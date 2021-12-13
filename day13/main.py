@@ -14,8 +14,6 @@ def get_data(path) -> (list[list[str]], list[str]):
     max_x = max([int(x[0]) for x in positions])
     max_y = max([int(x[1]) for x in positions])
 
-    print(f'max: {max_x}, {max_y}')
-
     map_dict = {}
 
     for x, y in positions:
@@ -34,7 +32,7 @@ def get_data(path) -> (list[list[str]], list[str]):
     return the_map, instructions
 
 
-def part1(the_map: list[list[str]], instructions) -> int:
+def fold(the_map: list[list[str]], instructions) -> list[list[str]]:
     for axis, fold_line in instructions:
         if axis == 'y':
             end = len(the_map) - 1
@@ -61,14 +59,20 @@ def part1(the_map: list[list[str]], instructions) -> int:
                     line[matching_col_no] = val
                     del line[col_no]
 
-    for row in the_map:
+    return the_map
+
+
+def part1(the_map: list[list[str]], instructions: list[str]) -> int:
+    res = fold(the_map, [instructions[0]])
+
+    return len(list(filter(lambda x: x == '#', itertools.chain(*res))))
+
+
+def part2(the_map: list[list[str]], instructions: list[str]):
+    res = fold(the_map, instructions)
+
+    for row in res:
         print(''.join(['#' if x == '#' else ' ' for x in row]))
-
-    return len(list(filter(lambda x: x == '#', itertools.chain(*the_map))))
-
-
-def part2(the_map: list[list[str]], instructions) -> int:
-    pass
 
 
 if __name__ == '__main__':
@@ -79,4 +83,5 @@ if __name__ == '__main__':
     file_name = sys.argv[1]
 
     print(f'part1 {part1(*get_data(file_name))}')
-    # print(f'part2 {part2(get_data(file_name))}')
+    print('part2')
+    part2(*get_data(file_name))
