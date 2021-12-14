@@ -11,9 +11,6 @@ def get_data(path) -> (list[str], dict[str, str]):
 
     template = [c for c in lines[0].strip()]
 
-    # rules = {splits[0].strip(): splits[1].strip()
-    #          for line in itertools.dropwhile(lambda x: '->' not in x, lines)
-    #          for splits in line.split(' -> ')}
     rules = {}
     for line in itertools.dropwhile(lambda x: '->' not in x, lines):
         splits = line.strip().split(' -> ')
@@ -26,7 +23,7 @@ def partition(lst: list, n: int) -> Tuple:
     for i in range(0, len(lst) - 1):
         a = lst[i]
         b = lst[i + 1]
-        yield (a, b)
+        yield a, b
 
 
 def combine(template: list[str], rules: dict[str, str], iterations: int = 10) -> int:
@@ -53,7 +50,6 @@ def combine(template: list[str], rules: dict[str, str], iterations: int = 10) ->
 
     totals[template[-1]] += 1
 
-    print(totals)
     min_val = min(totals.values())
     max_val = max(totals.values())
 
