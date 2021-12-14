@@ -72,7 +72,7 @@ def part2(the_map: list[list[str]], instructions: list[str]):
     res = fold(the_map, instructions)
 
     for row in res:
-        print(''.join(['#' if x == '#' else ' ' for x in row]))
+        print(''.join([u"\u2588" if x == '#' else ' ' for x in row]))
 
 
 if __name__ == '__main__':
