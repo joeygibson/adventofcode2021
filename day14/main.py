@@ -26,10 +26,10 @@ def partition(lst: list, n: int) -> list:
         yield lst[i:i + 2]
 
 
-def part1(template: list[str], rules: dict[str, str]) -> int:
+def combine(template: list[str], rules: dict[str, str], iterations: int = 10) -> int:
     current = template
 
-    for i in range(10):
+    for i in range(iterations):
         print(f'iteration {i + 1}')
         new = []
 
@@ -51,6 +51,14 @@ def part1(template: list[str], rules: dict[str, str]) -> int:
     return max_elem - min_elem
 
 
+def part1(template: list[str], rules: dict[str, str]) -> int:
+    return combine(template, rules)
+
+
+def part2(template: list[str], rules: dict[str, str]) -> int:
+    return combine(template, rules, 40)
+
+
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print('Usage: main.py <filename>')
@@ -59,3 +67,5 @@ if __name__ == '__main__':
     file_name = sys.argv[1]
 
     print(f'part1 {part1(*get_data(file_name))}')
+    print()
+    print(f'part2 {part2(*get_data(file_name))}')
