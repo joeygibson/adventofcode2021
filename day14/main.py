@@ -1,7 +1,8 @@
 #! /usr/bin/env python3
 import itertools
 import sys
-from collections import Counter
+from collections import Counter, defaultdict
+from typing import Tuple
 
 
 def get_data(path) -> (list[str], dict[str, str]):
@@ -21,34 +22,42 @@ def get_data(path) -> (list[str], dict[str, str]):
     return template, rules
 
 
-def partition(lst: list, n: int) -> list:
+def partition(lst: list, n: int) -> Tuple:
     for i in range(0, len(lst) - 1):
-        yield lst[i:i + 2]
+        a = lst[i]
+        b = lst[i + 1]
+        yield (a, b)
 
 
 def combine(template: list[str], rules: dict[str, str], iterations: int = 10) -> int:
-    current = template
+    pairs = Counter()
+
+    for pair in partition(template, 1):
+        pairs[pair] = 1
 
     for i in range(iterations):
         print(f'iteration {i + 1}')
-        new = []
+        next_pairs = Counter()
 
-        pairs = list(partition(current, 1))
-        new_vals = [rules[''.join(pair)] for pair in pairs]
-        for index, c in enumerate(current):
-            if index >= len(new_vals):
-                new += [c]
-            else:
-                new += [c, new_vals[index]]
+        for (a, b), tally in pairs.items():
+            i = rules[''.join([a, b])]
+            next_pairs[(a, i)] += tally
+            next_pairs[(i, b)] += tally
 
-        current = new
+        pairs = next_pairs
 
-    counts = Counter(current)
+    totals = defaultdict(lambda: 0)
 
-    max_elem = max(counts.values())
-    min_elem = min(counts.values())
+    for (a, b), tally in pairs.items():
+        totals[a] += tally
 
-    return max_elem - min_elem
+    totals[template[-1]] += 1
+
+    print(totals)
+    min_val = min(totals.values())
+    max_val = max(totals.values())
+
+    return max_val - min_val
 
 
 def part1(template: list[str], rules: dict[str, str]) -> int:
