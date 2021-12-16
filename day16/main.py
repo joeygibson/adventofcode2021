@@ -17,7 +17,8 @@ def get_version_and_type(binary: str) -> (int, int):
     return p_version, p_type
 
 
-def process_literal(binary: str) -> (int, int):
+def process_literal(binary: str) -> (int, int, int):
+    sv, _ = get_version_and_type(binary[0:5])
     literal_str = ''
 
     stop = False
@@ -35,12 +36,13 @@ def process_literal(binary: str) -> (int, int):
         literal_str += substr
 
     literal = int(literal_str, 2)
-    # bytes_to_skip = len(binary) - last_index if last_index < len(binary) - 1 else 0
 
-    return literal, last_index
+    return sv, literal, last_index
 
 
-def process_operator(binary: str) -> (int, List[int]):
+def process_operator(binary: str) -> (List[int], int, List[int]):
+    ov, _ = get_version_and_type(binary[0:5])
+    versions = [ov]
     length_type = binary[6]
     sub_packets = []
 
@@ -50,10 +52,10 @@ def process_operator(binary: str) -> (int, List[int]):
         rest = binary[22:22 + length]
 
         while rest:
-            _, st = get_version_and_type(rest)
+            sv, st = get_version_and_type(rest)
             if st == 4:
-                literal, packet_length = process_literal(rest)
-
+                version, literal, packet_length = process_literal(rest)
+                versions.append(version)
                 sub_packets.append(literal)
                 if packet_length > 0:
                     rest = rest[packet_length:]
@@ -65,33 +67,45 @@ def process_operator(binary: str) -> (int, List[int]):
         rest = binary[18:]
 
         for sub in range(subpackets):
-            _, st = get_version_and_type(rest)
+            sv, st = get_version_and_type(rest)
             if st == 4:
-                literal, packet_length = process_literal(rest)
+                version, literal, packet_length = process_literal(rest)
+                versions.append(version)
 
                 sub_packets.append(literal)
                 if packet_length > 0:
                     rest = rest[packet_length:]
             else:
-                pass
+                sub_versions, literal, packet_length = process_operator(rest)
+                versions += sub_versions
 
-    return -1, []
+                sub_packets.append(literal)
+                # if packet_length > 0:
+                #     rest = rest[packet_length:]
+
+    return versions, -1, []
 
 
 def part1(packets: str) -> int:
     binary = ''.join([hex_map[c] for c in packets])
 
     p_version, p_type = get_version_and_type(binary[0:6])
-
-    print(f'p_version: {p_version}, p_type: {p_type}')
+    print(f'p_version: {p_version}')
+    versions = []
 
     if p_type == 4:
-        # literal
-        literal, packet_length = process_literal(binary)
+        version, literal, packet_length = process_literal(binary)
+        extra = binary[packet_length:]
+        versions.append(version)
         print(f'{literal}, {packet_length}')
     else:
         # operator
-        op, vals = process_operator(binary)
+        sub_versions, op, vals = process_operator(binary)
+        versions += sub_versions
+
+    print(f'versions {versions}')
+    print(f'version count {len(versions)}')
+    return sum(versions)
 
 
 if __name__ == '__main__':
