@@ -1,27 +1,23 @@
 #! /usr/bin/env python3
 import sys
+from collections import defaultdict
 from typing import Tuple
 
 Pair = Tuple[int, int]
 
 
-class Spot:
-    def __init__(self, position: Pair, parent: 'Spot' = None, risk: int = 0):
-        self.position = position
-        self.parent = parent
-        self.g = 0
-        self.h = 0
-        self.f = 0
-        self.risk = risk
+class Graph:
+    def __init__(self, the_map):
+        self.nodes = set()
+        self.distances = the_map
 
-    def __eq__(self, other):
-        return self.position == other.position
+    def addNode(self, value):
+        self.nodes.add(value)
 
-    def __lt__(self, other):
-        return self.risk < other.risk
-
-    def __repr__(self):
-        return f'({self.position}, {self.f} ({self.risk}))'
+    def edges(self, node):
+        x, y = node
+        neighbors = [(x, y + 1), (x + 1, y), (x, y - 1), (x - 1, y)]
+        return [n for n in neighbors if self.distances.get(n) is not None]
 
 
 def get_data(path) -> dict[Pair, int]:
@@ -37,96 +33,43 @@ def get_data(path) -> dict[Pair, int]:
     return the_map
 
 
-def part1(the_map: dict[Pair, int]) -> [Pair]:
-    start_pos = min(the_map.keys())
-    goal_pos = max(the_map.keys())
+def dijkstra(graph, initial, goal):
+    visited = {initial: 0}
+    path = defaultdict(list)
 
-    start = Spot(start_pos, risk=the_map[start_pos])
-    goal = Spot(goal_pos, risk=the_map[goal_pos])
+    nodes = set(graph.nodes)
 
-    open = []
-    closed = []
+    while nodes:
+        minNode = None
+        for node in nodes:
+            if node in visited:
+                if minNode is None:
+                    minNode = node
+                elif visited[node] < visited[minNode]:
+                    minNode = node
 
-    open.append(start)
+        if minNode is None:
+            break
 
-    while len(open) > 0:
-        open.sort()
+        nodes.remove(minNode)
+        currentWeight = visited[minNode]
 
-        current = open.pop(0)
+        for edge in graph.edges(minNode):
+            weight = currentWeight + graph.distances[edge]
+            if edge not in visited or weight < visited[edge]:
+                visited[edge] = weight
+                path[edge].append(minNode)
 
-        closed.append(current)
-
-        if current == goal:
-            path = []
-            while current != start:
-                path.append(current.position)
-                current = current.parent
-
-            for spot in reversed(path):
-                print(f'{spot} => {the_map[spot]}')
-
-            res = sum([the_map[spot] for spot in path])
-
-            return res
-
-        x, y = current.position
-
-        neighbors = [(x + 1, y), (x, y + 1)]
-
-        for next in neighbors:
-            map_value = the_map.get(next)
-
-            if map_value is None:
-                continue
-
-            neighbor = Spot(next, current, risk=map_value)
-
-            if neighbor is closed:
-                continue
-
-            neighbor.g = abs(neighbor.position[0] - start.position[0]) + \
-                         abs(neighbor.position[1] - start.position[1])
-            neighbor.h = abs(neighbor.position[0] - goal.position[0]) + \
-                         abs(neighbor.position[1] - goal.position[1])
-            neighbor.f = neighbor.g + neighbor.h + neighbor.risk
-
-            if add_to_open(open, neighbor):
-                open.append(neighbor)
-
-    return None
+    return visited[goal]
 
 
-def add_to_open(open: list[Spot], neighbor: Spot) -> bool:
-    for node in open:
-        print(f'{neighbor.f} <=> {node.f}')
-        if neighbor == node and neighbor.f >= node.f:
-            return False
+def part1(the_map: dict[Pair, int]) -> int:
+    g = Graph(the_map)
 
-    return True
+    for node in the_map.keys():
+        g.addNode(node)
 
-
-# def part1(the_map: dict[Tuple[int, int], int]) -> int:
-# start = min(the_map.keys())
-# goal = max(the_map.keys())
-#
-# current = start
-# path = []
-#
-# while current != goal:
-#     x, y = current
-#
-#     neighbors = [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
-#     neighbors_and_vals = {n: the_map.get(n) for n in neighbors if the_map.get(n) is not None}
-#
-#     low_risk_neighbors = []
-#
-#     for n, val in neighbors_and_vals.items():
-#         if val < low_val:
-#             low_val = val
-#             low_key = n
-#
-#     path.append(low_key)
-#     current = low_key
+    return dijkstra(g, min(the_map.keys()), max(the_map.keys()))
 
 
 if __name__ == '__main__':
