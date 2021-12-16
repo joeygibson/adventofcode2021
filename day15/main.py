@@ -1,7 +1,8 @@
 #! /usr/bin/env python3
 import sys
 from collections import defaultdict
-from typing import Tuple
+from copy import deepcopy
+from typing import Tuple, Dict
 
 Pair = Tuple[int, int]
 
@@ -30,6 +31,50 @@ def get_data(path) -> dict[Pair, int]:
         for i, val in enumerate(row.strip()):
             the_map[(i, j)] = int(val)
 
+    return the_map
+
+
+def get_exploded_data(path) -> Dict[Pair, int]:
+    with open(path) as f:
+        lines = [line.strip() for line in f.readlines() if line.strip()]
+
+    cols = len(lines[0].strip())
+    rows = len(lines)
+
+    raw_map = [[0 for col in range(cols)] for row in range(rows)]
+
+    for j, row in enumerate(lines):
+        for i, val in enumerate(row.strip()):
+            raw_map[j][i] = int(val)
+
+    for row_num, row in enumerate(raw_map):
+        new_row = deepcopy(row)
+        current_vals = new_row
+        for i in range(4):
+            new_cols = [x + 1 if x + 1 <= 9 else 1 for x in current_vals]
+            new_row += new_cols
+            current_vals = new_cols
+
+        raw_map[row_num] = new_row
+
+    new_map = deepcopy(raw_map)
+    current_map = deepcopy(new_map)
+    for i in range(4):
+        tmp_map = []
+        for row in current_map:
+            new_row = [x + 1 if x + 1 <= 9 else 1 for x in row]
+            tmp_map.append(new_row)
+
+        new_map += tmp_map
+        current_map = tmp_map
+
+    the_map = {}
+
+    for j, row in enumerate(new_map):
+        for i, val in enumerate(row):
+            the_map[(i, j)] = val
+
+    print('map created')
     return the_map
 
 
@@ -79,6 +124,6 @@ if __name__ == '__main__':
 
     file_name = sys.argv[1]
 
-    print(f'part1 {part1(get_data(file_name))}')
+    # print(f'part1 {part1(get_data(file_name))}')
     print()
-    # print(f'part2 {part2(*get_data(file_name))}')
+    print(f'part2 {part1(get_exploded_data(file_name))}')
