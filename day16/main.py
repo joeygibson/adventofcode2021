@@ -5,6 +5,95 @@ from typing import List
 hex_map = {hex(i)[2:].upper(): bin(i)[2:].zfill(4) for i in range(0, 16)}
 
 
+class Packet:
+    def __init__(self, in_str="", as_bin=False) -> None:
+        self.value = 0
+        self.literal = 0
+        self.version = 0
+        self.type_id = None
+        self.extra = ""
+        self.children = []
+
+        if not in_str or all(x == '0' for x in in_str):
+            return
+        if not as_bin:
+            new = ""
+            for i in range(len(in_str)):
+                new += hex_map[in_str[i]]
+            inp = new
+        else:
+            inp = in_str
+
+        self.version = int(inp[:3], 2)
+        self.type_id = int(inp[3:6], 2)
+        self.inp = inp
+
+        if self.type_id == 4:
+            self.get_literal()
+        else:
+            self.get_ops()
+
+    def __repr__(self) -> str:
+        return f"{self.type_id=},{self.version=},{self.value=}"
+
+    def get_literal(self):
+        literal_val = self.inp[6:]
+        literal_str = ''
+
+        stop = False
+        for i in range(0, len(literal_val), 5):
+            if stop:
+                break
+
+            marker = literal_val[i]
+            if marker == '0':
+                stop = True
+
+            substr = literal_val[i + 1: i + 5]
+            literal_str += substr
+
+        self.value = int(literal_str, 2)
+        self.extra = self.inp[len(literal_str) + 6:]
+
+    def get_ops(self):
+        length_type = self.inp[6]
+
+        if length_type == '0':
+            data = self.inp[7:7+15]
+            length_in_bits = int(data, 2)
+            self.total_children_length = length_in_bits
+
+            remaining = self.inp[22:22+length_in_bits]
+
+            while remaining:
+                temp = Packet(remaining, True)
+                self.children.append(temp)
+                remaining = temp.extra
+
+            all_packets.extend(self.children)
+            self.extra = self.inp[22 + length_in_bits:]
+        elif length_type == '1':
+            # next 11 bits
+            data = self.inp[7:7 + 11]
+            contains = int(data, 2)
+            cur = self.inp[18:]
+            self.num_children = contains
+            used = 0
+            for _ in range(contains):
+                temp = Packet(cur, True)
+                self.children.append(temp)
+                cur = temp.extra
+                used += len(cur)
+
+            all_packets.extend(self.children)
+            self.extra = cur
+        else:
+            assert False, length_type
+
+
+all_packets = []
+
+
 def get_data(path) -> str:
     with open(path) as f:
         return f.read().strip()
@@ -89,23 +178,26 @@ def process_operator(binary: str) -> (List[int], int, List[int]):
 def part1(packets: str) -> int:
     binary = ''.join([hex_map[c] for c in packets])
 
-    p_version, p_type = get_version_and_type(binary[0:6])
-    print(f'p_version: {p_version}')
-    versions = []
-
-    if p_type == 4:
-        version, literal, packet_length = process_literal(binary)
-        extra = binary[packet_length:]
-        versions.append(version)
-        print(f'{literal}, {packet_length}')
-    else:
-        # operator
-        sub_versions, op, vals = process_operator(binary)
-        versions += sub_versions
-
-    print(f'versions {versions}')
-    print(f'version count {len(versions)}')
-    return sum(versions)
+    p = Packet(binary, True)
+    print(p)
+    #
+    # p_version, p_type = get_version_and_type(binary[0:6])
+    # print(f'p_version: {p_version}')
+    # versions = []
+    #
+    # if p_type == 4:
+    #     version, literal, packet_length = process_literal(binary)
+    #     extra = binary[packet_length:]
+    #     versions.append(version)
+    #     print(f'{literal}, {packet_length}')
+    # else:
+    #     # operator
+    #     sub_versions, op, vals = process_operator(binary)
+    #     versions += sub_versions
+    #
+    # print(f'versions {versions}')
+    # print(f'version count {len(versions)}')
+    # return sum(versions)
 
 
 if __name__ == '__main__':
